@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "264836146924",
+    "project_id": "webviewacademia",
+    "storage_bucket": "webviewacademia.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:264836146924:android:4257020548e47fb1a1a7c9",
+        "android_client_info": {
+          "package_name": "com.example.flutter_webview_academia"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBG9teQ8gJMB_Lq3axongTVogp-yjx4th0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
