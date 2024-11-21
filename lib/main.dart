@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_webview_academia/NotificationScreen.dart';
 import 'package:flutter_webview_academia/login.dart';
 import 'package:flutter_webview_academia/registro.dart';
 import 'package:flutter_webview_academia/services/notification_service.dart';
@@ -47,11 +48,24 @@ class _WebViewExampleState extends State<WebViewExample> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.orange,
-        title: const Text('Webfiness'),
-        centerTitle: true,
-      ),
+    appBar: AppBar(
+  backgroundColor: Colors.orange,
+  title: const Text('Webfiness'),
+  centerTitle: true,
+  actions: [
+    IconButton(
+      icon: const Icon(Icons.notifications),
+      onPressed: () {
+        // Ao clicar no ícone de notificação, navega para a tela de notificações
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const NotificationScreen()),
+        );
+      },
+    ),
+  ],
+),
+
       body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
