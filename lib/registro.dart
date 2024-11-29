@@ -42,6 +42,7 @@ class CadastroForm extends StatefulWidget {
   const CadastroForm({super.key});
 
   @override
+  // ignore: library_private_types_in_public_api
   _CadastroFormState createState() => _CadastroFormState();
 }
 
@@ -114,8 +115,18 @@ class _CadastroFormState extends State<CadastroForm> {
                 decoration: const InputDecoration(labelText: 'Celular'),
                 keyboardType: TextInputType.phone,
                 inputFormatters: [
-                  MaskedInputFormatter('(##) #####-####'),
+                  MaskedInputFormatter(
+                      '(##)#####-####'), // Mascara de telefone
                 ],
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Por favor, insira um número de celular';
+                  }
+                  if (value.length < 14) {
+                    return 'Número de celular inválido';
+                  }
+                  return null;
+                },
               ),
               // Campo CPF com máscara
               TextFormField(
@@ -231,17 +242,20 @@ class _CadastroFormState extends State<CadastroForm> {
                                   "idUsuario": 0,
                                   "nome": _nomeController.text,
                                   "sobrenome": _sobrenomeController.text,
-                                  "celular": _celularController.text,
+                                  "celular": _celularController.text
+                                      .replaceAll(RegExp(r'[^0-9]'), ''),
                                   "cpf": _cpfController.text,
                                   "email": _emailController.text,
                                   "login": _emailController.text,
                                   "senha": _senhaController.text,
                                   "idCliente": 1,
                                   "tipoLogin": "user",
-                                  "flgAtivo": true,
+                                  "flgAtivo": false,
                                   "dtInclusao": formataData,
                                   "dtAlteracao": formataData,
-                                  "tokenAparelho": token
+                                  "tokenAparelho": token,
+                        	        "tokenRegisto_jwt": "",
+                                  "tempoVidaToken_jwt": formataData
                                 });
 
                                 String message = await stringFuture;
@@ -252,6 +266,13 @@ class _CadastroFormState extends State<CadastroForm> {
 
                                 // Exibe a mensagem de sucesso ou erro
                                 if (message == "Sucesso") {
+
+                                  showAlertDialog(
+                                    // ignore: use_build_context_synchronously
+                                    context,
+                                    true, 
+                                    'Usuário cadastrado com sucesso, um email com o link para validar seu acesso foi enviado para ${_emailController.text}.');
+                                
                                   // Limpa os campos
                                   _nomeController.clear();
                                   _sobrenomeController.clear();
@@ -260,29 +281,39 @@ class _CadastroFormState extends State<CadastroForm> {
                                   _cpfController.clear();
                                   _senhaController.clear();
                                   _repetirSenhaController.clear();
-
-                                  showAlertDialog(context,
-                                      'Usuário cadastrado com sucesso!');
+                                
                                 } else if (message ==
                                     "Email já cadastrado, utilize a recuperação de senha na tela de login") {
-                                  showAlertDialog(context,
-                                      'Email já cadastrado, utilize a recuperação de senha na tela de login');
-                                } else {
+
                                   showAlertDialog(
-                                      context, 'Erro ao cadastrar o usuário!');
+                                    // ignore: use_build_context_synchronously
+                                    context,
+                                    false,
+                                    'Email já cadastrado, utilize a recuperação de senha na tela de login');
+                                } else {
+                                  
+                                  showAlertDialog(
+                                    // ignore: use_build_context_synchronously
+                                      context, 
+                                      false,
+                                      'Erro ao cadastrar o usuário!');
                                 }
                               } catch (e) {
                                 setState(() {
                                   _isLoading =
                                       false; // Desativa o carregamento em caso de erro
                                 });
-                                showAlertDialog(context,
-                                    'Ocorreu um erro ao tentar cadastrar o usuário. Tente novamente mais tarde.');
+                                
+                                showAlertDialog(
+                                  // ignore: use_build_context_synchronously
+                                  context,
+                                  false,
+                                  'Ocorreu um erro ao tentar cadastrar o usuário. Tente novamente mais tarde.');
                               }
                             } else {
                               setState(() {
                                 _isLoading =
-                                    false;// Se a validação falhar, desativa o carregamento
+                                    false; // Se a validação falhar, desativa o carregamento
                               });
                             }
                           },
@@ -358,7 +389,7 @@ class _CadastroFormState extends State<CadastroForm> {
     return true;
   }
 
-  void showAlertDialog(BuildContext content, String message) {
+  void showAlertDialog(BuildContext content, bool sucesso, String message) {
     showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -369,6 +400,9 @@ class _CadastroFormState extends State<CadastroForm> {
               TextButton(
                   onPressed: () {
                     Navigator.of(context).pop();
+                    if(sucesso) {
+                      Navigator.pushReplacementNamed(context, '/');
+                    }
                   },
                   child: const Text('Ok'))
             ],
