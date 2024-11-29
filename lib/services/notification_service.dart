@@ -1,39 +1,41 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
+// Variável para armazenar as notificações
+List<String> notifications = [];
+
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await NotificationService.instance.setupFlutterNotifications();
   await NotificationService.instance.showNotification(message);
 }
 
-
-class NotificationService{
-  
+class NotificationService {
   NotificationService._();
   static final NotificationService instance = NotificationService._();
 
-  final _messaging = FirebaseMessaging.instance;
-  // ignore: non_constant_identifier_names
-  final _local_notifications = FlutterLocalNotificationsPlugin();
-  // ignore: non_constant_identifier_names
-  bool _isflutter_local_notificationsInitialized = false;
+  final FirebaseMessaging _messaging = FirebaseMessaging.instance;
+  final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
+  bool _isFlutterLocalNotificationsInitialized = false;
 
   Future<String> initialize() async {
- 
+    // Registra o handler de mensagens em segundo plano
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-    //Request permission
+    // Solicitar permissão para exibir notificações
     await _requestPermission();
 
-    //Setup message handlers
+    // Configurar os handlers de mensagens
     await _setupMessageHandlers();
 
+    // Obter o token de FCM para o dispositivo
     final token = await _messaging.getToken();
+    // ignore: avoid_print
     print('Token: $token');
-    return token.toString();
+    return token ?? '';
   }
 
+  // Solicitar permissão para receber notificações
   Future<void> _requestPermission() async {
     final settings = await _messaging.requestPermission(
       alert: true,
@@ -44,32 +46,35 @@ class NotificationService{
       provisional: false,
       sound: true,
     );
-
-    print('permission status: ${settings.authorizationStatus}');
+    // ignore: avoid_print
+    print('Status de permissão: ${settings.authorizationStatus}');
   }
 
+  // Configurar o plugin de notificações locais
   Future<void> setupFlutterNotifications() async {
-    if (_isflutter_local_notificationsInitialized){
+    if (_isFlutterLocalNotificationsInitialized) {
       return;
     }
 
-    //android  setup
-    const channel = AndroidNotificationChannel('high_importance_chanel', 
-    'High Importance Notification',
-    description: 'This channel is used for important notifications',
-    importance:  Importance.high,
+    // Configuração do canal de notificação no Android
+    const channel = AndroidNotificationChannel(
+      'high_importance_channel',
+      'High Importance Notification',
+      description: 'Este canal é usado para notificações importantes',
+      importance: Importance.high,
     );
 
-    await _local_notifications.resolvePlatformSpecificImplementation<
-      AndroidFlutterLocalNotificationsPlugin>()
-      ?.createNotificationChannel(channel);
+    // Criar o canal de notificação no Android
+    await _localNotifications.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(channel);
 
-    const initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher'); 
+    // Configuração do Android para o inicializador
+    const initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    //ios setup
+    // Configuração do iOS
     final initializationSettingsDarwin = DarwinInitializationSettings(
       onDidReceiveLocalNotification: (id, title, body, payload) async {
-        //
+        // Lógica ao receber uma notificação no iOS
       },
     );
 
@@ -78,31 +83,37 @@ class NotificationService{
       iOS: initializationSettingsDarwin,
     );
 
-    await _local_notifications.initialize(
+    // Inicializar o plugin de notificações locais
+    await _localNotifications.initialize(
       initializationSettings,
       onDidReceiveNotificationResponse: (details) {
-        
+        // Lógica ao clicar na notificação
       },
     );
 
-    _isflutter_local_notificationsInitialized = true;
+    _isFlutterLocalNotificationsInitialized = true;
   }
 
-  Future<void> showNotification (RemoteMessage message) async {
+  // Exibir a notificação local no dispositivo
+  Future<void> showNotification(RemoteMessage message) async {
     RemoteNotification? notification = message.notification;
     AndroidNotification? android = message.notification?.android;
-   
-    if(notification != null && android != null){
-      await _local_notifications.show(
-        notification.hashCode, 
+
+    if (notification != null && android != null) {
+      // Armazena a mensagem recebida
+      notifications.add(notification.body ?? 'Sem conteúdo');
+
+      // Exibir a notificação
+      await _localNotifications.show(
+        notification.hashCode,
         notification.title,
         notification.body,
         const NotificationDetails(
           android: AndroidNotificationDetails(
-            'high_importance_chanel', 
+            'high_importance_channel',
             'High Importance Notification',
-            channelDescription: 'This channel is used for important notifications',
-            importance:  Importance.high,
+            channelDescription: 'Este canal é usado para notificações importantes',
+            importance: Importance.high,
             priority: Priority.high,
             icon: '@mipmap/ic_launcher',
           ),
@@ -112,33 +123,40 @@ class NotificationService{
             presentSound: true,
           ),
         ),
-        payload: message.data.toString(),  
+        payload: message.data.toString(),
       );
     }
   }
 
+  // Configurar os handlers de mensagens
   Future<void> _setupMessageHandlers() async {
-    //foreground message
-
-    FirebaseMessaging.onMessage.listen((message){
+    // Mensagens recebidas enquanto o app está em primeiro plano
+    FirebaseMessaging.onMessage.listen((message) {
       showNotification(message);
     });
 
-    // background message
+    // Mensagens recebidas enquanto o app está em segundo plano ou fechado
     FirebaseMessaging.onMessageOpenedApp.listen(_handleBackgroundMessage);
 
-    //opened app
+    // Recuperando a mensagem inicial, caso o app tenha sido aberto via notificação
     final initialMessage = await _messaging.getInitialMessage();
-    if(initialMessage != null){
+    if (initialMessage != null) {
       _handleBackgroundMessage(initialMessage);
     }
-
   }
 
-  void _handleBackgroundMessage(RemoteMessage message){
-    if(message.data['type'] == 'chat'){
-
+  // Lidar com a mensagem de fundo
+  void _handleBackgroundMessage(RemoteMessage message) {
+    // Aqui você pode verificar o tipo de mensagem e tomar uma ação
+    if (message.data['type'] == 'chat') {
+      // Exemplo de navegação ou ação específica
+      // ignore: avoid_print
+      print('Mensagem de chat recebida!');
     }
   }
 
+  // Método para exibir as notificações armazenadas em uma tela
+  List<String> getNotifications() {
+    return notifications;
+  }
 }

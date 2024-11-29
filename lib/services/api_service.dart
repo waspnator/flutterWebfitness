@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  final String url = "http://apiacademia.runasp.net/api/Usuario/InsertUsuario";
+  final String url = "http://apiagendafitness.eflsoftware.com.br/api/Usuario/InsertUsuario";
 
   // ignore: non_constant_identifier_names
   Future<String> CadastrarUsuario(Map<String, dynamic> data) async {
@@ -29,7 +29,7 @@ class ApiService {
       }
     }catch (e){
       // ignore: avoid_print
-      print('exceçao: ${e}');
+      print('exceçao: $e');
       return '';
     }
   }

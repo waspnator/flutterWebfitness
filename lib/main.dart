@@ -1,10 +1,9 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_webview_academia/NotificationScreen.dart';
 import 'package:flutter_webview_academia/login.dart';
 import 'package:flutter_webview_academia/registro.dart';
 import 'package:flutter_webview_academia/services/notification_service.dart';
-// ignore: depend_on_referenced_packages
-import 'package:webview_flutter/webview_flutter.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,8 +25,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: WebViewExample(),
+   return MaterialApp(
+      // Definindo a rota inicial e as rotas nomeadas
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const WebViewExample(),
+        '/login': (context) => const Login(),
+        '/cadastro': (context) => const CadastroScreen(),
+      },
       debugShowCheckedModeBanner: false,
     );
   }
@@ -42,31 +47,39 @@ class WebViewExample extends StatefulWidget {
 }
 
 class _WebViewExampleState extends State<WebViewExample> {
-  late WebViewController _controller;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.orange,
-        title: const Text('Webfiness'),
+        title: const Text('Gestão Fitness'),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications),
+            onPressed: () {
+              // Ao clicar no ícone de notificação, navega para a tela de notificações
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const NotificationScreen()),
+              );
+            },
+          ),
+        ],
       ),
       body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/fundo_logo.jpeg'), // Caminho da imagem no diretório assets
-            fit: BoxFit.cover, // Ajusta a imagem para cobrir todo o container
+            image: AssetImage('assets/fundo_logo.jpeg'),
+            fit: BoxFit.cover,
           ),
         ),
         child: Column(
           children: <Widget>[
             Column(
-              //ROW 1
               children: <Widget>[
                 Container(
                   margin: const EdgeInsets.only(top: 150.0),
-                  color: null,
                   child: Image.asset(
                     'assets/power-gym.png',
                     height: 250,
@@ -85,14 +98,14 @@ class _WebViewExampleState extends State<WebViewExample> {
                       height: 100,
                       child: ElevatedButton(
                         onPressed: () {
-                          Navigator.push(
+                          Navigator.pushNamed(
                             context,
-                            MaterialPageRoute(builder: (context) => const Login()),
+                            '/login', // Usando a rota nomeada
                           );
                         },
                         style: ElevatedButton.styleFrom(
-                          foregroundColor: Colors.white, // Muda a cor do texto do botão
-                          backgroundColor: Colors.orange, // Muda a cor de fundo do botão
+                          foregroundColor: Colors.white,
+                          backgroundColor: Colors.orange,
                         ),
                         child: const Text("Login"),
                       ),
@@ -104,14 +117,14 @@ class _WebViewExampleState extends State<WebViewExample> {
                       height: 100,
                       child: ElevatedButton(
                         onPressed: () {
-                          Navigator.push(
+                          Navigator.pushNamed(
                             context,
-                            MaterialPageRoute(builder: (context) => const CadastroScreen()),
+                            '/cadastro', // Usando a rota nomeada
                           );
                         },
                         style: ElevatedButton.styleFrom(
-                          foregroundColor: Colors.white, // Muda a cor do texto do botão
-                          backgroundColor: Colors.orange, // Muda a cor de fundo do botão
+                          foregroundColor: Colors.white,
+                          backgroundColor: Colors.orange,
                         ),
                         child: const Text("Cadastro"),
                       ),
@@ -124,17 +137,5 @@ class _WebViewExampleState extends State<WebViewExample> {
         ),
       ),
     );
-  }
-
-  void _validateContent() async {
-    // ignore: deprecated_member_use
-    String content = await _controller.evaluateJavascript("document.body.innerText");
-    if (content.contains("Expected Text")) {
-      // ignore: avoid_print
-      print("Content is valid");
-    } else {
-      // ignore: avoid_print
-      print("Content is not valid");
-    }
   }
 }

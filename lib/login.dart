@@ -23,6 +23,7 @@ class WebViewExample extends StatefulWidget {
 }
 
 class _WebViewExampleState extends State<WebViewExample> {
+  // ignore: unused_field
   late WebViewController _controller;
   bool isLoading = true;
 
@@ -47,21 +48,11 @@ class _WebViewExampleState extends State<WebViewExample> {
               ? const Center(
                   child: CircularProgressIndicator(),
                 )
-              : Stack(),
+              : const Stack(),
         ],
       ),
 
     );
   }
-
-  void _validateContent() async {
-    String content = await _controller.runJavascriptReturningResult("document.body.innerText");
-    if (content.contains("Expected Text")) {
-      // ignore: avoid_print
-      print("Content is valid");
-    } else {
-      // ignore: avoid_print
-      print("Content is not valid");
-    }
-  }
+ 
 }
